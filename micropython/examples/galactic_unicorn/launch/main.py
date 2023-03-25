@@ -1,4 +1,5 @@
 import time
+import sys
 import machine
 from galactic import GalacticUnicorn
 from picographics import PicoGraphics, DISPLAY_GALACTIC_UNICORN as DISPLAY
@@ -47,16 +48,20 @@ while True:
     galactic.update(graphics)
 
     if pressed() == GalacticUnicorn.SWITCH_A:
-        import fire as effect
+        import mbta as effect
+
         break
     if pressed() == GalacticUnicorn.SWITCH_B:
-        import supercomputer as effect  # noqa: F811
+        import fire as effect
+
         break
     if pressed() == GalacticUnicorn.SWITCH_C:
-        import rainbow as effect        # noqa: F811
+        import supercomputer as effect
+
         break
     if pressed() == GalacticUnicorn.SWITCH_D:
-        import retroprompt as effect    # noqa: F811
+        import clock as effect
+
         break
 
     # pause for a moment
@@ -95,7 +100,13 @@ while True:
         # update the display
         galactic.update(graphics)
     else:
-        effect.draw()
+        try:
+            effect.draw()
+        except Exception as error:
+            f = open("error.txt", "w")
+            sys.print_exception(error, f)
+            f.close()
+            machine.reset()
 
         # update the display
         galactic.update(graphics)
