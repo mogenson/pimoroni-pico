@@ -22,6 +22,8 @@ cyan = None
 
 rtc = machine.RTC()
 
+num_requests = 0
+
 URL = const("https://api-v3.mbta.com/predictions?filter[stop]={}&filter[route]={}")
 ISO8601 = re.compile("^(\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)")
 
@@ -45,18 +47,23 @@ class MBTA:
     def get_arrival_times(
         self,
     ) -> list[(int, int, int)]:  # list of hour, minute, seconds since midnight
+        global num_requests
         now = timenow()
         if now < self.update_time:
             return self.arrival_times, False  # cached results
 
         self.arrival_times = []
         res = requests.get(URL.format(self.stop, self.route))
+        num_requests += 1
         if res.status_code != 200:
             res.close()
             return self.arrival_times, False
 
         for data in res.json().get("data"):
             datetime = data.get("attributes").get("arrival_time")
+            if datetime is None:
+                res.close()
+                return self.arrival_times, False
             regex = ISO8601.match(datetime)
             hour = int(regex.group(4))
             minute = int(regex.group(5))
@@ -91,14 +98,22 @@ def init():
 def draw():
     global previous
     global graphics
+    global num_requests
     now = timenow()
     if now > 80000:
         # after about 11 pm, sleep for about 2 hours and reset
+        datetime = rtc.datetime()
+        f = open("num_requests.txt", "a")
+        f.write(
+            "{}/{}/{},{}\n".format(datetime[0], datetime[1], datetime[2], num_requests)
+        )
+        f.close()
         time.sleep(20000)
         now = timenow()
         previous = now
         bus_87.update_time = now
         bus_88.update_time = now
+        num_requests = 0
         return
     if now > previous:
         previous = now

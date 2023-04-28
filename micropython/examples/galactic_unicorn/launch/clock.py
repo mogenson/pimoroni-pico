@@ -5,7 +5,7 @@
 import time
 import math
 import machine
-
+from galactic import GalacticUnicorn
 
 # constants for controlling the background colour throughout the day
 MIDDAY_HUE = 1.1
@@ -29,8 +29,8 @@ width = GalacticUnicorn.WIDTH
 height = GalacticUnicorn.HEIGHT
 
 # set up some pens to use later
-WHITE = graphics.create_pen(255, 255, 255)
-BLACK = graphics.create_pen(0, 0, 0)
+WHITE = None
+BLACK = None
 
 
 @micropython.native  # noqa: F821
@@ -163,9 +163,11 @@ def redraw_display_if_reqd():
 
 
 def init():
+    global WHITE, BLACK
     # set the font
     graphics.set_font("bitmap8")
-
+    WHITE = graphics.create_pen(255, 255, 255)
+    BLACK = graphics.create_pen(0, 0, 0)
 
 def draw():
     redraw_display_if_reqd()

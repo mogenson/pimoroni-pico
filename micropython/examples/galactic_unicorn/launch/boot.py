@@ -15,7 +15,7 @@ import re
 # connect to wifi
 nic = network.WLAN(network.STA_IF)
 nic.active(True)
-nic.connect(.....................................................)
+nic.connect("THE_INTERNET", "seriesoftubes")
 while not nic.isconnected():
     time.sleep(1)
 print(nic.ifconfig()[0])
