@@ -125,15 +125,15 @@ down_button.irq(trigger=machine.Pin.IRQ_FALLING, handler=adjust_utc_offset)
 
 year, month, day, wd, hour, minute, second, _ = rtc.datetime()
 
-last_second = second
+last_minute = -1
 
 
 # Check whether the RTC time has changed and if so redraw the display
 def redraw_display_if_reqd():
-    global year, month, day, wd, hour, minute, second, last_second
+    global year, month, day, wd, hour, minute, last_minute
 
     year, month, day, wd, hour, minute, second, _ = rtc.datetime()
-    if second != last_second:
+    if minute != last_minute:
         hour = (hour + utc_offset) % 24
         time_through_day = (((hour * 60) + minute) * 60) + second
         percent_through_day = time_through_day / 86400
@@ -150,7 +150,7 @@ def redraw_display_if_reqd():
 
         gradient_background(hue, sat, val, hue + HUE_OFFSET, sat, val)
 
-        clock = "{:02}:{:02}:{:02}".format(hour, minute, second)
+        clock = "{}:{:02}".format(hour, minute)
 
         # calculate text position so that it is centred
         w = graphics.measure_text(clock, 1)
@@ -159,7 +159,7 @@ def redraw_display_if_reqd():
 
         outline_text(clock, x, y)
 
-        last_second = second
+        last_minute = minute
 
 
 def init():
