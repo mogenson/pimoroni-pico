@@ -6,16 +6,17 @@ except ImportError:
     import requests
 
 
-import utelnetserver
 import network
 import machine
 import re
+
+import secrets
 
 
 # connect to wifi
 nic = network.WLAN(network.STA_IF)
 nic.active(True)
-nic.connect("THE_INTERNET", "seriesoftubes")
+nic.connect(secrets.ssid_name, secrets.ssid_password)
 while not nic.isconnected():
     time.sleep(1)
 print(nic.ifconfig()[0])
@@ -34,6 +35,3 @@ if result.status_code == 200:
     weekday = int(json.get("day_of_week")) + 1  # RTC weekday is 1-7
     machine.RTC().datetime((year, month, day, weekday, hour, minute, second, 0))
 result.close()
-
-# start telnet server
-utelnetserver.start()

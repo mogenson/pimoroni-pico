@@ -1,11 +1,41 @@
-import time
+import re
 import sys
-import machine
-from galactic import GalacticUnicorn
-from picographics import PicoGraphics, DISPLAY_GALACTIC_UNICORN as DISPLAY
+import time
 
-# overclock to 200Mhz
-machine.freq(200000000)
+import machine
+import network
+from galactic import GalacticUnicorn
+from picographics import DISPLAY_GALACTIC_UNICORN as DISPLAY
+from picographics import PicoGraphics
+
+try:
+    import urequests as requests
+except ImportError:
+    import requests
+
+
+# connect to wifi
+nic = network.WLAN(network.STA_IF)
+nic.active(True)
+nic.connect("THE_INTERNET", "seriesoftubes")
+while not nic.isconnected():
+    time.sleep(1)
+print(nic.ifconfig()[0])
+
+# set time and convert to local timezone
+result = requests.get("http://worldtimeapi.org/api/timezone/America/New_York")
+if result.status_code == 200:
+    json = result.json()
+    datetime = json.get("datetime")
+    print(datetime)
+    ISO8601 = re.compile("^(\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)")
+    regex = ISO8601.match(datetime)
+    year, month, day, hour, minute, second = tuple(
+        int(regex.group(i)) for i in range(1, 7)
+    )
+    weekday = int(json.get("day_of_week")) + 1  # RTC weekday is 1-7
+    machine.RTC().datetime((year, month, day, weekday, hour, minute, second, 0))
+result.close()
 
 # create galactic object and graphics surface for drawing
 galactic = GalacticUnicorn()
@@ -112,11 +142,13 @@ while True:
         galactic.update(graphics)
 
         # brightness up/down
-        if galactic.is_pressed(GalacticUnicorn.SWITCH_BRIGHTNESS_UP):
-            brightness += 0.01
-        if galactic.is_pressed(GalacticUnicorn.SWITCH_BRIGHTNESS_DOWN):
-            brightness -= 0.01
-        brightness = max(min(brightness, 1.0), 0.0)
+        #if galactic.is_pressed(GalacticUnicorn.SWITCH_BRIGHTNESS_UP):
+        #    brightness += 0.01
+        #if galactic.is_pressed(GalacticUnicorn.SWITCH_BRIGHTNESS_DOWN):
+        #    brightness -= 0.01
+        lux = galactic.light()
+        brightness = lux / 500
+        brightness = max(min(brightness, 1.0), 0.1)
 
         galactic.set_brightness(brightness)
 
