@@ -58,6 +58,7 @@ def pressed():
     return None
 
 
+timeout = time.time() + 300  # 5 minute timeout
 # wait for a button to be pressed and load that effect
 while True:
     graphics.set_font("bitmap6")
@@ -96,6 +97,9 @@ while True:
 
     # pause for a moment
     time.sleep(0.01)
+    if time.time() > timeout:
+        import mbta as effect
+        break
 
 # wait until all buttons are released
 while pressed() is not None:
